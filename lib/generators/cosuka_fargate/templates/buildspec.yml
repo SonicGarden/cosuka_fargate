@@ -1,0 +1,55 @@
+version: 0.2
+
+env:
+  variables:
+    REPOSITORY_URI: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_NAME
+phases:
+  install:
+    runtime-versions:
+      docker: 18
+    commands:
+      - echo install started on `date`
+      - apt update
+      - apt -y install nodejs
+      - apt -y install yarn
+      - apt -y install fonts-migmix libicu-dev cmake
+      - update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10
+      - echo `ruby --version`
+      - echo `gem --version`
+      - gem install bundler
+      - bundle install
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - echo AWS_DEFAULT_REGION $AWS_DEFAULT_REGION
+      - echo AWS_ACCOUNT_ID $AWS_ACCOUNT_ID
+      - echo IMAGE_NAME $IMAGE_NAME
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo $IMAGE_TAG
+      - docker login --help
+      - aws ecr get-login --region $AWS_DEFAULT_REGION
+      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Test rspec...
+      # TODO:ローカルにsqlite3などのDBを作って対応するように
+      #- bundle exec rspec
+      - echo Building the Docker image...
+      - docker build -t $IMAGE_NAME:latest .
+      - docker tag $IMAGE_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_NAME:$IMAGE_TAG
+  post_build:
+    commands:
+      # https://docs.aws.amazon.com/ja_jp/codebuild/latest/userguide/build-env-ref-env-vars.html
+      - echo CODEBUILD_RESOLVED_SOURCE_VERSION $CODEBUILD_RESOLVED_SOURCE_VERSION
+      - echo $IMAGE_TAG
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_NAME:$IMAGE_TAG
+      # ref) https://blog.spacemarket.com/code/ci-cd-codepipeline/
+      - echo Writing image definitions file...
+      - echo "[{\"name\":\"rails\",\"imageUri\":\"$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_NAME:$IMAGE_TAG\"}]" > imagedefinitions.json
+      - cat imagedefinitions.json
+artifacts:
+  files: imagedefinitions.json
