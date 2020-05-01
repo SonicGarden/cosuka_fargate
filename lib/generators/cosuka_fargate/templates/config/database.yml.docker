@@ -2,7 +2,7 @@ development:
   adapter:  postgresql
   host:     localhost
   encoding: unicode
-  database: sg-bariki_development
+  database: <%= @app_name %>_development
   pool:     5
   port:     54321
   username: postgres
@@ -10,18 +10,17 @@ development:
 
 staging:
   adapter:  postgresql
-  host:     <%= ENV['RDS_HOST'] %>
+  host:     <%%= ENV['RDS_HOST'] %>
   encoding: unicode
-  database: <%= ENV['RDS_DATABASE'] %>
-  username: <%= ENV['RDS_DB_USERNAME'] %>
-  password: <%= ENV['RDS_DB_PASSWORD'] %>
+  database: <%%= ENV['RDS_DATABASE'] %>
+  username: <%%= ENV['RDS_DB_USERNAME'] %>
+  password: <%%= ENV['RDS_DB_PASSWORD'] %>
 
 production:
   adapter:  postgresql
-  host:     <%= ENV['RDS_HOST'] %>
+  host:     <%%= ENV['RDS_HOST'] %>
   encoding: unicode
-  database: <%= ENV['RDS_DATABASE'] %>
-  username: <%= ENV['RDS_DB_USERNAME'] %>
-  password: <%= ENV['RDS_DB_PASSWORD'] %>
-
+  database: <%%= ENV['RDS_DATABASE'] %>
+  username: <%%= ENV['RDS_DB_USERNAME'] %>
+  password: <%%= ENV['RDS_DB_PASSWORD'] %>
 
