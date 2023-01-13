@@ -33,7 +33,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'foreman'
   spec.add_dependency 'elastic_whenever'
-  spec.add_dependency 'aws-ssm-env'
 
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
